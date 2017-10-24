@@ -43,14 +43,26 @@ static THD_FUNCTION(updateScreen, arg);
 #define SPI_PORT GPIOA
 #define SCK_PAD  5  //PA5
 #define MISO_PAD 6 //PA6
-#define MOSI_PAD 7 //PA7
+#define MOSI_PAD 12 //PA7
 
 #define CS_PORT     GPIOA
 #define RESET_PORT  GPIOA
-#define DNC_PORT    GPIOA
-#define CS_PAD     8        // PB5 --  0 = chip selected
-#define RESET_PAD  10        // PA10 -- 0 = reset
-#define DNC_PAD    9        // PA9 -- control=0, data=1 -- DNC or D/C
+#define DNC_PORT    GPIOB
+#define CS_PAD     11        // PB5 --  0 = chip selected
+#define RESET_PAD  8        // PA10 -- 0 = reset
+#define DNC_PAD    6        // PA9 -- control=0, data=1 -- DNC or D/C
+
+//led pins
+#define LED_PORT GPIOB
+#define LED_PIN 0
+
+//powerPins
+#define OLEDPWR_PORT GPIOB
+#define OLEDPWR_PIN 7
+
+//2.8v power pins (oled + therm)
+#define PWR28_PORT GPIOA
+#define PWR28_PIN 1
 
 #define VOSPI_FRAME_SIZE (164)
 
@@ -111,6 +123,20 @@ void lepton3();
 static int uitoa(unsigned int value, char * buf, int max);
 void displayWatch();
 void enterStandby();
+void powerOLED(int onOff);
+
+void powerOLED(int onOff){
+  if(onOff){
+    //palSetPadMode(OLEDPWR_PORT,OLEDPWR_PIN, PAL_MODE_INPUT_PULLUP);
+    palSetPad(OLEDPWR_PORT, OLEDPWR_PIN);
+    palSetPad(PWR28_PORT, PWR28_PIN);
+  }
+  else{
+    //palSetPadMode(OLEDPWR_PORT,OLEDPWR_PIN, PAL_MODE_INPUT_PULLDOWN);
+    palClearPad(OLEDPWR_PORT, OLEDPWR_PIN);
+    palClearPad(PWR28_PORT, PWR28_PIN);
+  }
+}
 
 //char hist[256];
 
@@ -128,6 +154,12 @@ int main(void) {
   palSetPadMode(SPI_PORT, MOSI_PAD,  PAL_MODE_ALTERNATE(5));
   palSetPadMode(SPI_PORT, MISO_PAD,  PAL_MODE_ALTERNATE(5));
   palSetPadMode(CS_PORT, CS_PAD, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetPadMode(LED_PORT,LED_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetPadMode(OLEDPWR_PORT,OLEDPWR_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetPadMode(PWR28_PORT,PWR28_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearPad(LED_PORT, LED_PIN);
+  powerOLED(1);
+  chThdSleepMilliseconds(1000);
   //palSetPadMode(GPIOB, 3, PAL_MODE_OUTPUT_PUSHPULL);
   //palSetPadMode(DNC_PORT, DNC_PAD, PAL_MODE_OUTPUT_PUSHPULL);
 //
@@ -136,7 +168,9 @@ int main(void) {
   //spiStop(&SPID1);
   pixmap = gdispPixmapCreate(128, 96);
   displayWatch();
+
   chThdSleepMilliseconds(1000);
+  //powerOLED(0);
   spiStart(&SPID3, &spi_cfg_therm);
   //spiUnselect(&SPID3);
   //spiSelect(&SPID3);

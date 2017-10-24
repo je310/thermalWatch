@@ -16,10 +16,10 @@
 
 #define CS_PORT     GPIOA
 #define RESET_PORT  GPIOA
-#define DNC_PORT    GPIOA
+#define DNC_PORT    GPIOB
 #define CS_PAD     11        // PB5 --  0 = chip selected
-#define RESET_PAD  10        // PA10 -- 0 = reset
-#define DNC_PAD    9        // PA9 -- control=0, data=1 -- DNC or D/C
+#define RESET_PAD  8        // PA10 -- 0 = reset
+#define DNC_PAD    6        // PA9 -- control=0, data=1 -- DNC or D/C
 
 // SPI setup ajust " SPI_BaudRatePrescaler_X" to set SPI speed.
 // Peripherial Clock 42MHz SPI2 SPI3
